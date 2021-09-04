@@ -99,6 +99,10 @@ type NamespacedMutatingWebhook struct {
 	Status NamespacedMutatingWebhookStatus `json:"status,omitempty"`
 }
 
+func (w NamespacedMutatingWebhook) ConfigName() string {
+	return w.Namespace + "-" + w.Name
+}
+
 //+kubebuilder:object:root=true
 
 // NamespacedMutatingWebhookList contains a list of NamespacedMutatingWebhook

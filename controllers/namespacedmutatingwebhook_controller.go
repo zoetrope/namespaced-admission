@@ -18,20 +18,30 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
 	webhookv1 "github.com/zoetrope/namespaced-webhook/api/v1"
 	admissionv1 "k8s.io/api/admissionregistration/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	admissionv1apply "k8s.io/client-go/applyconfigurations/admissionregistration/v1"
 	metav1apply "k8s.io/client-go/applyconfigurations/meta/v1"
+	"k8s.io/client-go/util/workqueue"
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // NamespacedMutatingWebhookReconciler reconciles a NamespacedMutatingWebhook object
@@ -55,12 +65,31 @@ type NamespacedMutatingWebhookReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.8.3/pkg/reconcile
 func (r *NamespacedMutatingWebhookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	logger := log.FromContext(ctx)
 
 	var nmw webhookv1.NamespacedMutatingWebhook
 	err := r.Get(ctx, req.NamespacedName, &nmw)
 	if err != nil {
-		return ctrl.Result{}, err
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+	if err != nil {
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+	if nmw.DeletionTimestamp.IsZero() {
+		if !controllerutil.ContainsFinalizer(&nmw, Finalizer) {
+			controllerutil.AddFinalizer(&nmw, Finalizer)
+			err = r.Update(ctx, &nmw)
+			if err != nil {
+				return ctrl.Result{}, nil
+			}
+		}
+	} else {
+		logger.Info("starting finalization")
+		if err := r.finalize(ctx, nmw); err != nil {
+			return ctrl.Result{}, fmt.Errorf("failed to finalize: %w", err)
+		}
+		logger.Info("finished finalization")
+		return ctrl.Result{}, nil
 	}
 	err = r.reconcileWebhookConfiguration(ctx, nmw)
 	if err != nil {
@@ -70,13 +99,51 @@ func (r *NamespacedMutatingWebhookReconciler) Reconcile(ctx context.Context, req
 	return ctrl.Result{}, nil
 }
 
+func (r *NamespacedMutatingWebhookReconciler) finalize(ctx context.Context, nvw webhookv1.NamespacedMutatingWebhook) error {
+	if !controllerutil.ContainsFinalizer(&nvw, Finalizer) {
+		return nil
+	}
+
+	logger := log.FromContext(ctx)
+
+	config := &admissionv1.MutatingWebhookConfiguration{}
+	if err := r.Get(ctx, client.ObjectKey{Name: nvw.ConfigName()}, config); err != nil {
+		if !apierrors.IsNotFound(err) {
+			return err
+		}
+		goto CLEANUP
+	}
+
+	{
+		ownerNamespace := nvw.Labels[LabelOwnerNamespace]
+		ownerName := nvw.Labels[LabelOwnerName]
+		if ownerNamespace != nvw.Namespace || ownerName != nvw.Name {
+			logger.Info("finalization: ignored non-owned MutatingWebhookConfiguration", "ownerNamespace", ownerNamespace, "ownerName", ownerName)
+			goto CLEANUP
+		}
+	}
+
+	if err := r.Delete(ctx, config); err != nil {
+		return fmt.Errorf("failed to delete MutatingWebhookConfiguration %s: %w", nvw.ConfigName(), err)
+	}
+
+	logger.Info("deleted MutatingWebhookConfiguration", "name", nvw.ConfigName())
+
+CLEANUP:
+	controllerutil.RemoveFinalizer(&nvw, Finalizer)
+	return r.Update(ctx, &nvw)
+}
+
 func (r *NamespacedMutatingWebhookReconciler) reconcileWebhookConfiguration(ctx context.Context, nmw webhookv1.NamespacedMutatingWebhook) error {
 	logger := log.FromContext(ctx)
 
-	controllerName := "namespaced-mutating-webhook-controller"
 	configName := nmw.Namespace + "-" + nmw.Name
 
-	config := admissionv1apply.MutatingWebhookConfiguration(configName)
+	config := admissionv1apply.MutatingWebhookConfiguration(configName).
+		WithLabels(map[string]string{
+			LabelCreatedBy: NamespacedMutatingWebhookControllerName,
+		})
+
 	webhooks := make([]*admissionv1apply.MutatingWebhookApplyConfiguration, 0)
 	for _, hook := range nmw.Webhooks {
 		webhook := admissionv1apply.MutatingWebhook().
@@ -102,7 +169,7 @@ func (r *NamespacedMutatingWebhookReconciler) reconcileWebhookConfiguration(ctx 
 		}
 		webhook.WithNamespaceSelector(metav1apply.LabelSelector().
 			WithMatchExpressions(metav1apply.LabelSelectorRequirement().
-				WithKey("kubernetes.io/metadata.name").
+				WithKey(corev1.LabelMetadataName).
 				WithOperator(metav1.LabelSelectorOpIn).
 				WithValues(nmw.Namespace),
 			),
@@ -125,7 +192,7 @@ func (r *NamespacedMutatingWebhookReconciler) reconcileWebhookConfiguration(ctx 
 		return err
 	}
 
-	currApplyConfig, err := admissionv1apply.ExtractMutatingWebhookConfiguration(&current, controllerName)
+	currApplyConfig, err := admissionv1apply.ExtractMutatingWebhookConfiguration(&current, NamespacedMutatingWebhookControllerName)
 	if err != nil {
 		return err
 	}
@@ -135,7 +202,7 @@ func (r *NamespacedMutatingWebhookReconciler) reconcileWebhookConfiguration(ctx 
 	}
 
 	err = r.Patch(ctx, patch, client.Apply, &client.PatchOptions{
-		FieldManager: controllerName,
+		FieldManager: NamespacedMutatingWebhookControllerName,
 		Force:        pointer.Bool(true),
 	})
 	if err != nil {
@@ -149,8 +216,33 @@ func (r *NamespacedMutatingWebhookReconciler) reconcileWebhookConfiguration(ctx 
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *NamespacedMutatingWebhookReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	cfgHandler := func(obj client.Object, q workqueue.RateLimitingInterface) {
+		ns := obj.GetLabels()[LabelOwnerNamespace]
+		if ns == "" {
+			return
+		}
+		name := obj.GetLabels()[LabelOwnerName]
+		if name == "" {
+			return
+		}
+		q.Add(reconcile.Request{NamespacedName: types.NamespacedName{
+			Namespace: ns,
+			Name:      name,
+		}})
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&webhookv1.NamespacedMutatingWebhook{}).
-		Owns(&admissionv1.MutatingWebhookConfiguration{}). //TODO: FIXME
+		Watches(&source.Kind{Type: &admissionv1.MutatingWebhookConfiguration{}}, handler.Funcs{
+			UpdateFunc: func(ev event.UpdateEvent, q workqueue.RateLimitingInterface) {
+				if ev.ObjectNew.GetDeletionTimestamp() != nil {
+					return
+				}
+				cfgHandler(ev.ObjectNew, q)
+			},
+			DeleteFunc: func(ev event.DeleteEvent, q workqueue.RateLimitingInterface) {
+				cfgHandler(ev.Object, q)
+			},
+		}).
 		Complete(r)
 }

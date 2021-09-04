@@ -94,6 +94,10 @@ type NamespacedValidatingWebhook struct {
 	Status NamespacedValidatingWebhookStatus `json:"status,omitempty"`
 }
 
+func (w NamespacedValidatingWebhook) ConfigName() string {
+	return w.Namespace + "-" + w.Name
+}
+
 //+kubebuilder:object:root=true
 
 // NamespacedValidatingWebhookList contains a list of NamespacedValidatingWebhook
