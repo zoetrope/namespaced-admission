@@ -1,0 +1,84 @@
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - mutatingwebhookconfiguration
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - validatingwebhookconfiguration
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - webhook.zoetrope.github.io
+  resources:
+  - namespacedmutatingwebhooks
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - webhook.zoetrope.github.io
+  resources:
+  - namespacedmutatingwebhooks/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - webhook.zoetrope.github.io
+  resources:
+  - namespacedmutatingwebhooks/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - webhook.zoetrope.github.io
+  resources:
+  - namespacedvalidatingwebhooks
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - webhook.zoetrope.github.io
+  resources:
+  - namespacedvalidatingwebhooks/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - webhook.zoetrope.github.io
+  resources:
+  - namespacedvalidatingwebhooks/status
+  verbs:
+  - get
+  - patch
+  - update

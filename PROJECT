@@ -1,0 +1,25 @@
+domain: zoetrope.github.io
+layout:
+- go.kubebuilder.io/v3
+projectName: namespaced-webhook
+repo: github.com/zoetrope/namespaced-webhook
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: zoetrope.github.io
+  group: webhook
+  kind: NamespacedMutatingWebhook
+  path: github.com/zoetrope/namespaced-webhook/api/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: zoetrope.github.io
+  group: webhook
+  kind: NamespacedValidatingWebhook
+  path: github.com/zoetrope/namespaced-webhook/api/v1
+  version: v1
+version: "3"

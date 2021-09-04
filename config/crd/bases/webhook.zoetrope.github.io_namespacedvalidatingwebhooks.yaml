@@ -1,0 +1,178 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.6.1
+  creationTimestamp: null
+  name: namespacedvalidatingwebhooks.webhook.zoetrope.github.io
+spec:
+  group: webhook.zoetrope.github.io
+  names:
+    kind: NamespacedValidatingWebhook
+    listKind: NamespacedValidatingWebhookList
+    plural: namespacedvalidatingwebhooks
+    singular: namespacedvalidatingwebhook
+  scope: Namespaced
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        description: NamespacedValidatingWebhook is the Schema for the namespacedvalidatingwebhooks
+          API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          status:
+            description: NamespacedValidatingWebhookStatus defines the observed state
+              of NamespacedValidatingWebhook
+            enum:
+            - Applied
+            type: string
+          webhooks:
+            description: Webhooks is a list of webhooks and the affected resources
+              and operations.
+            items:
+              description: ValidatingWebhook describes an admission webhook and the
+                resources and operations it applies to.
+              properties:
+                admissionReviewVersions:
+                  description: AdmissionReviewVersions is an ordered list of preferred
+                    `AdmissionReview` versions the Webhook expects.
+                  items:
+                    type: string
+                  type: array
+                clientConfig:
+                  description: ClientConfig defines how to communicate with the hook.
+                  properties:
+                    caBundle:
+                      format: byte
+                      type: string
+                    service:
+                      description: ServiceReferenceApplyConfiguration represents an
+                        declarative configuration of the ServiceReference type for
+                        use with apply.
+                      properties:
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                        path:
+                          type: string
+                        port:
+                          format: int32
+                          type: integer
+                      type: object
+                    url:
+                      type: string
+                  type: object
+                failurePolicy:
+                  default: Fail
+                  description: FailurePolicy defines how unrecognized errors from
+                    the admission endpoint are handled - allowed values are Ignore
+                    or Fail. Defaults to Fail.
+                  type: string
+                matchPolicy:
+                  default: Equivalent
+                  description: matchPolicy defines how the "rules" list is used to
+                    match incoming requests. Allowed values are "Exact" or "Equivalent".
+                  type: string
+                name:
+                  description: Name is the name of the admission webhook.
+                  type: string
+                objectSelector:
+                  description: ObjectSelector decides whether to run the webhook based
+                    on if the object has matching labels.
+                  properties:
+                    matchExpressions:
+                      items:
+                        description: LabelSelectorRequirementApplyConfiguration represents
+                          an declarative configuration of the LabelSelectorRequirement
+                          type for use with apply.
+                        properties:
+                          key:
+                            type: string
+                          operator:
+                            description: A label selector operator is the set of operators
+                              that can be used in a selector requirement.
+                            type: string
+                          values:
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                      type: array
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      type: object
+                  type: object
+                rules:
+                  description: Rules describes what operations on what resources/subresources
+                    the webhook cares about.
+                  items:
+                    description: RuleWithOperationsApplyConfiguration represents an
+                      declarative configuration of the RuleWithOperations type for
+                      use with apply.
+                    properties:
+                      apiGroups:
+                        items:
+                          type: string
+                        type: array
+                      apiVersions:
+                        items:
+                          type: string
+                        type: array
+                      operations:
+                        items:
+                          description: OperationType specifies an operation for a
+                            request.
+                          type: string
+                        type: array
+                      resources:
+                        items:
+                          type: string
+                        type: array
+                      scope:
+                        description: ScopeType specifies a scope for a Rule.
+                        type: string
+                    type: object
+                  type: array
+                sideEffects:
+                  description: SideEffects states whether this webhook has side effects.
+                  type: string
+                timeoutSeconds:
+                  default: 10
+                  description: TimeoutSeconds specifies the timeout for this webhook.
+                    After the timeout passes,
+                  format: int32
+                  type: integer
+              required:
+              - admissionReviewVersions
+              - clientConfig
+              - name
+              - sideEffects
+              type: object
+            type: array
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
