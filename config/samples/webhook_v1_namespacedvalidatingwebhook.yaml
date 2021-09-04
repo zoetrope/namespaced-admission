@@ -1,0 +1,7 @@
+apiVersion: webhook.zoetrope.github.io/v1
+kind: NamespacedValidatingWebhook
+metadata:
+  name: namespacedvalidatingwebhook-sample
+spec:
+  # Add fields here
+  foo: bar

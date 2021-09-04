@@ -1,0 +1,7 @@
+apiVersion: webhook.zoetrope.github.io/v1
+kind: NamespacedMutatingWebhook
+metadata:
+  name: namespacedmutatingwebhook-sample
+spec:
+  # Add fields here
+  foo: bar
