@@ -19,22 +19,12 @@ package v1
 import (
 	admissionv1 "k8s.io/api/admissionregistration/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	admissionv1apply "k8s.io/client-go/applyconfigurations/admissionregistration/v1"
+	metav1apply "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
-// NamespacedValidatingWebhookSpec defines the desired state of NamespacedValidatingWebhook
-type NamespacedValidatingWebhookSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Webhooks is a list of webhooks and the affected resources and operations.
-	// +optional
-	// +patchMergeKey=name
-	// +patchStrategy=merge
-	Webhooks []ValidatingWebhook `json:"webhooks,omitempty" patchStrategy:"merge" patchMergeKey:"name"`
-}
 
 // ValidatingWebhook describes an admission webhook and the resources and operations it applies to.
 type ValidatingWebhook struct {
@@ -44,10 +34,10 @@ type ValidatingWebhook struct {
 
 	// ClientConfig defines how to communicate with the hook.
 	//+kubebuilder:validation:Required
-	ClientConfig admissionv1.WebhookClientConfig `json:"clientConfig"`
+	ClientConfig admissionv1apply.WebhookClientConfigApplyConfiguration `json:"clientConfig"`
 
 	// Rules describes what operations on what resources/subresources the webhook cares about.
-	Rules []admissionv1.RuleWithOperations `json:"rules,omitempty"`
+	Rules []*admissionv1apply.RuleWithOperationsApplyConfiguration `json:"rules,omitempty"`
 
 	// FailurePolicy defines how unrecognized errors from the admission endpoint are handled -
 	// allowed values are Ignore or Fail. Defaults to Fail.
@@ -64,7 +54,7 @@ type ValidatingWebhook struct {
 	// ObjectSelector decides whether to run the webhook based on if the
 	// object has matching labels.
 	// +optional
-	ObjectSelector *metav1.LabelSelector `json:"objectSelector,omitempty"`
+	ObjectSelector *metav1apply.LabelSelectorApplyConfiguration `json:"objectSelector,omitempty"`
 
 	// SideEffects states whether this webhook has side effects.
 	SideEffects *admissionv1.SideEffectClass `json:"sideEffects"`
@@ -84,7 +74,7 @@ type ValidatingWebhook struct {
 type NamespacedValidatingWebhookStatus string
 
 const (
-    NamespacedValidatingWebhookApplied  = NamespacedValidatingWebhookStatus ("Applied")
+	NamespacedValidatingWebhookApplied = NamespacedValidatingWebhookStatus("Applied")
 )
 
 //+kubebuilder:object:root=true
@@ -95,7 +85,12 @@ type NamespacedValidatingWebhook struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   NamespacedValidatingWebhookSpec   `json:"spec,omitempty"`
+	// Webhooks is a list of webhooks and the affected resources and operations.
+	// +optional
+	// +patchMergeKey=name
+	// +patchStrategy=merge
+	Webhooks []ValidatingWebhook `json:"webhooks,omitempty" patchStrategy:"merge" patchMergeKey:"name"`
+
 	Status NamespacedValidatingWebhookStatus `json:"status,omitempty"`
 }
 

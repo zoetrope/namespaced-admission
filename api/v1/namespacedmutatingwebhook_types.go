@@ -89,7 +89,7 @@ type MutatingWebhook struct {
 type NamespacedMutatingWebhookStatus string
 
 const (
-	NamespacedMutatingWebhookApplied  = NamespacedMutatingWebhookStatus ("Applied")
+	NamespacedMutatingWebhookApplied = NamespacedMutatingWebhookStatus("Applied")
 )
 
 //+kubebuilder:object:root=true
