@@ -6,20 +6,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.6.1
   creationTimestamp: null
-  name: namespacedmutatingwebhooks.webhook.zoetrope.github.io
+  name: namespacedvalidatingwebhooks.webhook.zoetrope.github.io
 spec:
   group: webhook.zoetrope.github.io
   names:
-    kind: NamespacedMutatingWebhook
-    listKind: NamespacedMutatingWebhookList
-    plural: namespacedmutatingwebhooks
-    singular: namespacedmutatingwebhook
+    kind: NamespacedValidatingWebhook
+    listKind: NamespacedValidatingWebhookList
+    plural: namespacedvalidatingwebhooks
+    singular: namespacedvalidatingwebhook
   scope: Namespaced
   versions:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: NamespacedMutatingWebhook is the Schema for the namespacedmutatingwebhooks
+        description: NamespacedValidatingWebhook is the Schema for the namespacedvalidatingwebhooks
           API
         properties:
           apiVersion:
@@ -35,14 +35,14 @@ spec:
           metadata:
             type: object
           spec:
-            description: NamespacedMutatingWebhookSpec defines the desired state of
-              NamespacedMutatingWebhook
+            description: NamespacedValidatingWebhookSpec defines the desired state
+              of NamespacedValidatingWebhook
             properties:
               webhooks:
                 description: Webhooks is a list of webhooks and the affected resources
                   and operations.
                 items:
-                  description: MutatingWebhook describes an admission webhook and
+                  description: ValidatingWebhook describes an admission webhook and
                     the resources and operations it applies to.
                   properties:
                     admissionReviewVersions:
@@ -121,7 +121,7 @@ spec:
                       type: string
                     matchPolicy:
                       default: Equivalent
-                      description: MatchPolicy defines how the "rules" list is used
+                      description: matchPolicy defines how the "rules" list is used
                         to match incoming requests. Allowed values are "Exact" or
                         "Equivalent".
                       type: string
@@ -173,12 +173,6 @@ spec:
                             only "value". The requirements are ANDed.
                           type: object
                       type: object
-                    reinvocationPolicy:
-                      default: Never
-                      description: ReinvocationPolicy indicates whether this webhook
-                        should be called multiple times as part of a single admission
-                        evaluation.
-                      type: string
                     rules:
                       description: Rules describes what operations on what resources/subresources
                         the webhook cares about.
@@ -257,8 +251,8 @@ spec:
                 type: array
             type: object
           status:
-            description: NamespacedMutatingWebhookStatus defines the observed state
-              of NamespacedMutatingWebhook
+            description: NamespacedValidatingWebhookStatus defines the observed state
+              of NamespacedValidatingWebhook
             enum:
             - Applied
             type: string

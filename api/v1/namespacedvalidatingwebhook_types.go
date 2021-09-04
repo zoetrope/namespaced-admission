@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	admissionv1 "k8s.io/api/admissionregistration/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -28,15 +29,63 @@ type NamespacedValidatingWebhookSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of NamespacedValidatingWebhook. Edit namespacedvalidatingwebhook_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// Webhooks is a list of webhooks and the affected resources and operations.
+	// +optional
+	// +patchMergeKey=name
+	// +patchStrategy=merge
+	Webhooks []ValidatingWebhook `json:"webhooks,omitempty" patchStrategy:"merge" patchMergeKey:"name"`
+}
+
+// ValidatingWebhook describes an admission webhook and the resources and operations it applies to.
+type ValidatingWebhook struct {
+	// Name is the name of the admission webhook.
+	//+kubebuilder:validation:Required
+	Name string `json:"name" protobuf:"bytes,1,opt,name=name"`
+
+	// ClientConfig defines how to communicate with the hook.
+	//+kubebuilder:validation:Required
+	ClientConfig admissionv1.WebhookClientConfig `json:"clientConfig"`
+
+	// Rules describes what operations on what resources/subresources the webhook cares about.
+	Rules []admissionv1.RuleWithOperations `json:"rules,omitempty"`
+
+	// FailurePolicy defines how unrecognized errors from the admission endpoint are handled -
+	// allowed values are Ignore or Fail. Defaults to Fail.
+	// +kubebuilder:default="Fail"
+	// +optional
+	FailurePolicy *admissionv1.FailurePolicyType `json:"failurePolicy,omitempty"`
+
+	// matchPolicy defines how the "rules" list is used to match incoming requests.
+	// Allowed values are "Exact" or "Equivalent".
+	// +kubebuilder:default="Equivalent"
+	// +optional
+	MatchPolicy *admissionv1.MatchPolicyType `json:"matchPolicy,omitempty"`
+
+	// ObjectSelector decides whether to run the webhook based on if the
+	// object has matching labels.
+	// +optional
+	ObjectSelector *metav1.LabelSelector `json:"objectSelector,omitempty"`
+
+	// SideEffects states whether this webhook has side effects.
+	SideEffects *admissionv1.SideEffectClass `json:"sideEffects"`
+
+	// TimeoutSeconds specifies the timeout for this webhook. After the timeout passes,
+	// +kubebuilder:default=10
+	// +optional
+	TimeoutSeconds *int32 `json:"timeoutSeconds,omitempty"`
+
+	// AdmissionReviewVersions is an ordered list of preferred `AdmissionReview`
+	// versions the Webhook expects.
+	AdmissionReviewVersions []string `json:"admissionReviewVersions"`
 }
 
 // NamespacedValidatingWebhookStatus defines the observed state of NamespacedValidatingWebhook
-type NamespacedValidatingWebhookStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-}
+//+kubebuilder:validation:Enum=Applied
+type NamespacedValidatingWebhookStatus string
+
+const (
+    NamespacedValidatingWebhookApplied  = NamespacedValidatingWebhookStatus ("Applied")
+)
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status

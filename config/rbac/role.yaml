@@ -32,3 +32,29 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - webhook.zoetrope.github.io
+  resources:
+  - namespacedvalidatingwebhooks
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - webhook.zoetrope.github.io
+  resources:
+  - namespacedvalidatingwebhooks/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - webhook.zoetrope.github.io
+  resources:
+  - namespacedvalidatingwebhooks/status
+  verbs:
+  - get
+  - patch
+  - update
