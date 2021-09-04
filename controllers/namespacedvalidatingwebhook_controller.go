@@ -21,6 +21,8 @@ import (
 	"fmt"
 
 	webhookv1 "github.com/zoetrope/namespaced-webhook/api/v1"
+	"github.com/zoetrope/namespaced-webhook/pkg/constants"
+	"github.com/zoetrope/namespaced-webhook/pkg/utils"
 	admissionv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -72,8 +74,8 @@ func (r *NamespacedValidatingWebhookReconciler) Reconcile(ctx context.Context, r
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 	if nvw.DeletionTimestamp.IsZero() {
-		if !controllerutil.ContainsFinalizer(&nvw, Finalizer) {
-			controllerutil.AddFinalizer(&nvw, Finalizer)
+		if !controllerutil.ContainsFinalizer(&nvw, constants.Finalizer) {
+			controllerutil.AddFinalizer(&nvw, constants.Finalizer)
 			err = r.Update(ctx, &nvw)
 			if err != nil {
 				return ctrl.Result{}, nil
@@ -96,7 +98,7 @@ func (r *NamespacedValidatingWebhookReconciler) Reconcile(ctx context.Context, r
 }
 
 func (r *NamespacedValidatingWebhookReconciler) finalize(ctx context.Context, nvw webhookv1.NamespacedValidatingWebhook) error {
-	if !controllerutil.ContainsFinalizer(&nvw, Finalizer) {
+	if !controllerutil.ContainsFinalizer(&nvw, constants.Finalizer) {
 		return nil
 	}
 
@@ -111,8 +113,8 @@ func (r *NamespacedValidatingWebhookReconciler) finalize(ctx context.Context, nv
 	}
 
 	{
-		ownerNamespace := nvw.Labels[LabelOwnerNamespace]
-		ownerName := nvw.Labels[LabelOwnerName]
+		ownerNamespace := nvw.Labels[constants.LabelOwnerNamespace]
+		ownerName := nvw.Labels[constants.LabelOwnerName]
 		if ownerNamespace != nvw.Namespace || ownerName != nvw.Name {
 			logger.Info("finalization: ignored non-owned ValidatingWebhookConfiguration", "ownerNamespace", ownerNamespace, "ownerName", ownerName)
 			goto CLEANUP
@@ -126,7 +128,7 @@ func (r *NamespacedValidatingWebhookReconciler) finalize(ctx context.Context, nv
 	logger.Info("deleted ValidatingWebhookConfiguration", "name", nvw.ConfigName())
 
 CLEANUP:
-	controllerutil.RemoveFinalizer(&nvw, Finalizer)
+	controllerutil.RemoveFinalizer(&nvw, constants.Finalizer)
 	return r.Update(ctx, &nvw)
 }
 
@@ -135,28 +137,15 @@ func (r *NamespacedValidatingWebhookReconciler) reconcileWebhookConfiguration(ct
 
 	config := admissionv1apply.ValidatingWebhookConfiguration(nvw.ConfigName()).
 		WithLabels(map[string]string{
-			LabelCreatedBy: NamespacedValidatingWebhookControllerName,
+			constants.LabelCreatedBy: constants.NamespacedValidatingWebhookControllerName,
 		})
 
 	webhooks := make([]*admissionv1apply.ValidatingWebhookApplyConfiguration, 0)
 	for _, hook := range nvw.Webhooks {
-		webhook := admissionv1apply.ValidatingWebhook().
-			WithName(hook.Name).
-			WithClientConfig(&hook.ClientConfig).
-			WithRules(hook.Rules...).
-			WithObjectSelector(hook.ObjectSelector).
-			WithAdmissionReviewVersions(hook.AdmissionReviewVersions...)
-		if hook.FailurePolicy != nil {
-			webhook.WithFailurePolicy(*hook.FailurePolicy)
-		}
-		if hook.MatchPolicy != nil {
-			webhook.WithMatchPolicy(*hook.MatchPolicy)
-		}
-		if hook.SideEffects != nil {
-			webhook.WithSideEffects(*hook.SideEffects)
-		}
-		if hook.TimeoutSeconds != nil {
-			webhook.WithTimeoutSeconds(*hook.TimeoutSeconds)
+		webhook := admissionv1apply.ValidatingWebhook()
+		err := utils.DeepCopy(webhook, hook)
+		if err != nil {
+			return err
 		}
 		webhook.WithNamespaceSelector(metav1apply.LabelSelector().
 			WithMatchExpressions(metav1apply.LabelSelectorRequirement().
@@ -183,7 +172,7 @@ func (r *NamespacedValidatingWebhookReconciler) reconcileWebhookConfiguration(ct
 		return err
 	}
 
-	currApplyConfig, err := admissionv1apply.ExtractValidatingWebhookConfiguration(&current, NamespacedValidatingWebhookControllerName)
+	currApplyConfig, err := admissionv1apply.ExtractValidatingWebhookConfiguration(&current, constants.NamespacedValidatingWebhookControllerName)
 	if err != nil {
 		return err
 	}
@@ -193,7 +182,7 @@ func (r *NamespacedValidatingWebhookReconciler) reconcileWebhookConfiguration(ct
 	}
 
 	err = r.Patch(ctx, patch, client.Apply, &client.PatchOptions{
-		FieldManager: NamespacedValidatingWebhookControllerName,
+		FieldManager: constants.NamespacedValidatingWebhookControllerName,
 		Force:        pointer.Bool(true),
 	})
 	if err != nil {
@@ -208,11 +197,11 @@ func (r *NamespacedValidatingWebhookReconciler) reconcileWebhookConfiguration(ct
 // SetupWithManager sets up the controller with the Manager.
 func (r *NamespacedValidatingWebhookReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	cfgHandler := func(obj client.Object, q workqueue.RateLimitingInterface) {
-		ns := obj.GetLabels()[LabelOwnerNamespace]
+		ns := obj.GetLabels()[constants.LabelOwnerNamespace]
 		if ns == "" {
 			return
 		}
-		name := obj.GetLabels()[LabelOwnerName]
+		name := obj.GetLabels()[constants.LabelOwnerName]
 		if name == "" {
 			return
 		}

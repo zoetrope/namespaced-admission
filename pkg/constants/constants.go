@@ -1,4 +1,4 @@
-package controllers
+package constants
 
 const MetaPrefix = "namespaced-webhook.zoetrope.github.io/"
 
