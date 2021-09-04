@@ -1,0 +1,6 @@
+domain: zoetrope.github.io
+layout:
+- go.kubebuilder.io/v3
+projectName: namespaced-webhook
+repo: github.com/zoetrope/namespaced-webhook
+version: "3"
