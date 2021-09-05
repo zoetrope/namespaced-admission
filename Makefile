@@ -57,12 +57,12 @@ test: manifests generate fmt vet ## Run tests.
 
 ##@ Build
 
-build: generate fmt vet ## Build manager binary.
-	go build -o bin/manager main.go
+build: fmt vet ## Build manager binary.
+	go build -o bin/manager ./cmd/namespaced-webhook-controller
 
 #run: manifests generate fmt vet ## Run a controller from your host.
 run: ## Run a controller from your host.
-	go run ./main.go
+	go run ./cmd/namespaced-webhook-controller/main.go
 
 docker-build: test ## Build docker image with the manager.
 	docker build -t ${IMG} .
