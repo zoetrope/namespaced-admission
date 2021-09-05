@@ -1,9 +1,9 @@
-apiVersion: webhook.zoetrope.github.io/v1
-kind: NamespacedMutatingWebhook
+apiVersion: admissionregistration.zoetrope.github.io/v1
+kind: NamespacedValidatingWebhookConfiguration
 metadata:
-  name: namespacedmutatingwebhook-sample
+  name: namespacedvalidatingwebhookconfiguration-sample
 webhooks:
-  - name: baseline.mpod.kb.io
+  - name: baseline.vpod.kb.io
     admissionReviewVersions:
       - v1
       - v1beta1
@@ -11,9 +11,8 @@ webhooks:
       service:
         name: webhook-service
         namespace: system
-        path: /mutate-baseline
+        path: /validate-baseline
     failurePolicy: Fail
-    reinvocationPolicy: IfNeeded
     rules:
       - apiGroups:
           - ""
@@ -24,7 +23,7 @@ webhooks:
         resources:
           - pods
     sideEffects: None
-  - name: restricted.mpod.kb.io
+  - name: restricted.vpod.kb.io
     admissionReviewVersions:
       - v1
       - v1beta1
@@ -32,9 +31,8 @@ webhooks:
       service:
         name: webhook-service
         namespace: system
-        path: /mutate-restricted
+        path: /validate-restricted
     failurePolicy: Fail
-    reinvocationPolicy: IfNeeded
     rules:
       - apiGroups:
           - ""

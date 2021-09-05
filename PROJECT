@@ -9,17 +9,23 @@ resources:
     namespaced: true
   controller: true
   domain: zoetrope.github.io
-  group: webhook
-  kind: NamespacedMutatingWebhook
+  group: admissionregistration
+  kind: NamespacedMutatingWebhookConfiguration
   path: github.com/zoetrope/namespaced-webhook/api/v1
   version: v1
+  webhooks:
+    defaulting: true
+    webhookVersion: v1
 - api:
     crdVersion: v1
     namespaced: true
   controller: true
   domain: zoetrope.github.io
-  group: webhook
-  kind: NamespacedValidatingWebhook
+  group: admissionregistration
+  kind: NamespacedValidatingWebhookConfiguration
   path: github.com/zoetrope/namespaced-webhook/api/v1
   version: v1
+  webhooks:
+    defaulting: true
+    webhookVersion: v1
 version: "3"

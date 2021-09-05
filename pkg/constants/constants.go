@@ -1,4 +1,4 @@
-package controllers
+package constants
 
 const MetaPrefix = "namespaced-webhook.zoetrope.github.io/"
 
@@ -12,6 +12,6 @@ const Finalizer = MetaPrefix + "finalizer"
 
 // Label or annotation values
 const (
-	NamespacedMutatingWebhookControllerName   = "namespaced-mutating-webhook-controller"
-	NamespacedValidatingWebhookControllerName = "namespaced-validating-webhook-controller"
+	NamespacedMutatingWebhookConfigurationControllerName   = "namespaced-mutating-webhook-controller"
+	NamespacedValidatingWebhookConfigurationControllerName = "namespaced-validating-webhook-controller"
 )
