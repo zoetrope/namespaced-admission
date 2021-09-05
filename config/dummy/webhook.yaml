@@ -1,0 +1,70 @@
+apiVersion: admissionregistration.zoetrope.github.io/v1
+kind: NamespacedMutatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: dummy-system/dummy-webhook-serving-cert
+  name: dummy-mutating-webhook
+  namespace: dummy-system
+webhooks:
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: dummy-webhook-service
+        namespace: dummy-system
+        path: /mutate
+    failurePolicy: Fail
+    name: mutating.dummy.kb.io
+    reinvocationPolicy: IfNeeded
+    rules:
+      - apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - pods
+    sideEffects: None
+    objectSelector:
+      matchExpressions:
+        - key: app.kubernetes.io/name
+          operator: NotIn
+          values: ["dummy-webhook"]
+---
+apiVersion: admissionregistration.zoetrope.github.io/v1
+kind: NamespacedValidatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: dummy-system/dummy-webhook-serving-cert
+  name: dummy-validating-webhook
+  namespace: dummy-system
+webhooks:
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: dummy-webhook-service
+        namespace: dummy-system
+        path: /validate
+    failurePolicy: Fail
+    name: validating.dummy.kb.io
+    rules:
+      - apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - pods
+    sideEffects: None
+    objectSelector:
+      matchExpressions:
+        - key: app.kubernetes.io/name
+          operator: NotIn
+          values: ["dummy-webhook"]

@@ -50,7 +50,7 @@ vet: ## Run go vet against code.
 	go vet ./...
 
 ENVTEST_ASSETS_DIR=$(shell pwd)/testbin
-test: manifests generate fmt vet ## Run tests.
+test: manifests fmt vet ## Run tests.
 	mkdir -p ${ENVTEST_ASSETS_DIR}
 	test -f ${ENVTEST_ASSETS_DIR}/setup-envtest.sh || curl -sSLo ${ENVTEST_ASSETS_DIR}/setup-envtest.sh https://raw.githubusercontent.com/kubernetes-sigs/controller-runtime/v0.8.3/hack/setup-envtest.sh
 	source ${ENVTEST_ASSETS_DIR}/setup-envtest.sh; fetch_envtest_tools $(ENVTEST_ASSETS_DIR); setup_envtest_env $(ENVTEST_ASSETS_DIR); go test ./... -coverprofile cover.out
@@ -60,15 +60,20 @@ test: manifests generate fmt vet ## Run tests.
 build: fmt vet ## Build manager binary.
 	go build -o bin/manager ./cmd/namespaced-webhook-controller
 
-#run: manifests generate fmt vet ## Run a controller from your host.
 run: ## Run a controller from your host.
 	go run ./cmd/namespaced-webhook-controller/main.go
 
-docker-build: test ## Build docker image with the manager.
+docker-build: ## Build docker image with the manager.
 	docker build -t ${IMG} .
 
-docker-push: ## Push docker image with the manager.
-	docker push ${IMG}
+docker-load:
+	kind load docker-image ${IMG}
+
+docker-build-dummy:
+	docker build -t dummy-webhook:latest -f Dockerfile.dummy .
+
+docker-load-dummy:
+	kind load docker-image dummy-webhook:latest
 
 ##@ Deployment
 
@@ -81,6 +86,12 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default | kubectl apply -f -
+
+deploy-dummy: kustomize
+	$(KUSTOMIZE) build config/dummy | kubectl apply -f -
+
+deploy-cert-manager:
+	kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.yaml
 
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config.
 	$(KUSTOMIZE) build config/default | kubectl delete -f -
