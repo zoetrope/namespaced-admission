@@ -1,0 +1,56 @@
+apiVersion: admissionregistration.zoetrope.github.io/v1
+kind: NamespacedMutatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: test3/webhook-serving-cert
+  name: mutating-test
+  namespace: test3
+webhooks:
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: webhook-service
+        namespace: test3
+        path: /mutate
+    failurePolicy: Fail
+    name: test.mpod.kb.io
+    reinvocationPolicy: IfNeeded
+    matchPolicy: Exact
+    rules:
+      - apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - pods
+      - apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - namespaces
+        scope: Cluster
+      - apiGroups:
+          - "apps"
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - deployments
+        scope: "*"
+    sideEffects: None
+    objectSelector:
+      matchExpressions:
+        - key: app.kubernetes.io/name
+          operator: NotIn
+          values: ["mutating-test"]

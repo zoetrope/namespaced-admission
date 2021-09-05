@@ -103,15 +103,15 @@ func (r *NamespacedMutatingWebhookConfigurationReconciler) Reconcile(ctx context
 	return ctrl.Result{}, nil
 }
 
-func (r *NamespacedMutatingWebhookConfigurationReconciler) finalize(ctx context.Context, nvw webhookv1.NamespacedMutatingWebhookConfiguration) error {
-	if !controllerutil.ContainsFinalizer(&nvw, constants.Finalizer) {
+func (r *NamespacedMutatingWebhookConfigurationReconciler) finalize(ctx context.Context, nmw webhookv1.NamespacedMutatingWebhookConfiguration) error {
+	if !controllerutil.ContainsFinalizer(&nmw, constants.Finalizer) {
 		return nil
 	}
 
 	logger := log.FromContext(ctx)
 
 	config := &admissionv1.MutatingWebhookConfiguration{}
-	if err := r.Get(ctx, client.ObjectKey{Name: nvw.ConfigName()}, config); err != nil {
+	if err := r.Get(ctx, client.ObjectKey{Name: nmw.ConfigName()}, config); err != nil {
 		if !apierrors.IsNotFound(err) {
 			return err
 		}
@@ -119,23 +119,23 @@ func (r *NamespacedMutatingWebhookConfigurationReconciler) finalize(ctx context.
 	}
 
 	{
-		ownerNamespace := nvw.Labels[constants.LabelOwnerNamespace]
-		ownerName := nvw.Labels[constants.LabelOwnerName]
-		if ownerNamespace != nvw.Namespace || ownerName != nvw.Name {
+		ownerNamespace := config.Labels[constants.LabelOwnerNamespace]
+		ownerName := config.Labels[constants.LabelOwnerName]
+		if ownerNamespace != nmw.Namespace || ownerName != nmw.Name {
 			logger.Info("finalization: ignored non-owned MutatingWebhookConfiguration", "ownerNamespace", ownerNamespace, "ownerName", ownerName)
 			goto CLEANUP
 		}
 	}
 
 	if err := r.Delete(ctx, config); err != nil {
-		return fmt.Errorf("failed to delete MutatingWebhookConfiguration %s: %w", nvw.ConfigName(), err)
+		return fmt.Errorf("failed to delete MutatingWebhookConfiguration %s: %w", nmw.ConfigName(), err)
 	}
 
-	logger.Info("deleted MutatingWebhookConfiguration", "name", nvw.ConfigName())
+	logger.Info("deleted MutatingWebhookConfiguration", "name", nmw.ConfigName())
 
 CLEANUP:
-	controllerutil.RemoveFinalizer(&nvw, constants.Finalizer)
-	return r.Update(ctx, &nvw)
+	controllerutil.RemoveFinalizer(&nmw, constants.Finalizer)
+	return r.Update(ctx, &nmw)
 }
 
 func (r *NamespacedMutatingWebhookConfigurationReconciler) reconcileWebhookConfiguration(ctx context.Context, nmw webhookv1.NamespacedMutatingWebhookConfiguration) error {
@@ -145,7 +145,9 @@ func (r *NamespacedMutatingWebhookConfigurationReconciler) reconcileWebhookConfi
 
 	config := admissionv1apply.MutatingWebhookConfiguration(configName).
 		WithLabels(map[string]string{
-			constants.LabelCreatedBy: constants.NamespacedMutatingWebhookConfigurationControllerName,
+			constants.LabelCreatedBy:      constants.NamespacedMutatingWebhookConfigurationControllerName,
+			constants.LabelOwnerNamespace: nmw.Namespace,
+			constants.LabelOwnerName:      nmw.Name,
 		})
 
 	config.WithLabels(nmw.Labels)

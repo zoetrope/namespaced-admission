@@ -115,8 +115,8 @@ func (r *NamespacedValidatingWebhookConfigurationReconciler) finalize(ctx contex
 	}
 
 	{
-		ownerNamespace := nvw.Labels[constants.LabelOwnerNamespace]
-		ownerName := nvw.Labels[constants.LabelOwnerName]
+		ownerNamespace := config.Labels[constants.LabelOwnerNamespace]
+		ownerName := config.Labels[constants.LabelOwnerName]
 		if ownerNamespace != nvw.Namespace || ownerName != nvw.Name {
 			logger.Info("finalization: ignored non-owned ValidatingWebhookConfiguration", "ownerNamespace", ownerNamespace, "ownerName", ownerName)
 			goto CLEANUP
@@ -139,7 +139,9 @@ func (r *NamespacedValidatingWebhookConfigurationReconciler) reconcileWebhookCon
 
 	config := admissionv1apply.ValidatingWebhookConfiguration(nvw.ConfigName()).
 		WithLabels(map[string]string{
-			constants.LabelCreatedBy: constants.NamespacedValidatingWebhookConfigurationControllerName,
+			constants.LabelCreatedBy:      constants.NamespacedValidatingWebhookConfigurationControllerName,
+			constants.LabelOwnerNamespace: nvw.Namespace,
+			constants.LabelOwnerName:      nvw.Name,
 		})
 
 	config.WithLabels(nvw.Labels)

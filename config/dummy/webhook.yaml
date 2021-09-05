@@ -17,6 +17,7 @@ webhooks:
     failurePolicy: Fail
     name: mutating.dummy.kb.io
     reinvocationPolicy: IfNeeded
+    matchPolicy: Exact
     rules:
       - apiGroups:
           - ""
@@ -52,6 +53,7 @@ webhooks:
         path: /validate
     failurePolicy: Fail
     name: validating.dummy.kb.io
+    matchPolicy: Exact
     rules:
       - apiGroups:
           - ""
