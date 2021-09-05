@@ -52,9 +52,9 @@ type NamespacedValidatingWebhookConfigurationReconciler struct {
 	TargetLabelKey string
 }
 
-//+kubebuilder:rbac:groups=webhook.zoetrope.github.io,resources=namespacedvalidatingwebhookconfigurations,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=webhook.zoetrope.github.io,resources=namespacedvalidatingwebhookconfigurations/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=webhook.zoetrope.github.io,resources=namespacedvalidatingwebhookconfigurations/finalizers,verbs=update
+//+kubebuilder:rbac:groups=admissionregistration.zoetrope.github.io,resources=namespacedvalidatingwebhookconfigurations,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=admissionregistration.zoetrope.github.io,resources=namespacedvalidatingwebhookconfigurations/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=admissionregistration.zoetrope.github.io,resources=namespacedvalidatingwebhookconfigurations/finalizers,verbs=update
 //+kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=validatingwebhookconfiguration,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=namespaces,verbs=get;list;watch
 

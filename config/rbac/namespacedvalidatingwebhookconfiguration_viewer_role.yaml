@@ -5,7 +5,7 @@ metadata:
   name: namespacedvalidatingwebhookconfiguration-viewer-role
 rules:
 - apiGroups:
-  - webhook.zoetrope.github.io
+  - admissionregistration.zoetrope.github.io
   resources:
   - namespacedvalidatingwebhookconfigurations
   verbs:
@@ -13,7 +13,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - webhook.zoetrope.github.io
+  - admissionregistration.zoetrope.github.io
   resources:
   - namespacedvalidatingwebhookconfigurations/status
   verbs:

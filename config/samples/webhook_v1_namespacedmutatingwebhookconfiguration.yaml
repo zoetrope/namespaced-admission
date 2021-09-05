@@ -1,4 +1,4 @@
-apiVersion: webhook.zoetrope.github.io/v1
+apiVersion: admissionregistration.zoetrope.github.io/v1
 kind: NamespacedMutatingWebhookConfiguration
 metadata:
   name: namespacedmutatingwebhookconfiguration-sample

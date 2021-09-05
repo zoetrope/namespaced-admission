@@ -53,9 +53,9 @@ type NamespacedMutatingWebhookConfigurationReconciler struct {
 	TargetLabelKey string
 }
 
-//+kubebuilder:rbac:groups=webhook.zoetrope.github.io,resources=namespacedmutatingwebhookconfigurations,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=webhook.zoetrope.github.io,resources=namespacedmutatingwebhookconfigurations/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=webhook.zoetrope.github.io,resources=namespacedmutatingwebhookconfigurations/finalizers,verbs=update
+//+kubebuilder:rbac:groups=admissionregistration.zoetrope.github.io,resources=namespacedmutatingwebhookconfigurations,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=admissionregistration.zoetrope.github.io,resources=namespacedmutatingwebhookconfigurations/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=admissionregistration.zoetrope.github.io,resources=namespacedmutatingwebhookconfigurations/finalizers,verbs=update
 //+kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=mutatingwebhookconfiguration,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=namespaces,verbs=get;list;watch
 

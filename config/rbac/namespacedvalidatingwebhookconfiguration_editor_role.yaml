@@ -5,7 +5,7 @@ metadata:
   name: namespacedvalidatingwebhookconfiguration-editor-role
 rules:
 - apiGroups:
-  - webhook.zoetrope.github.io
+  - admissionregistration.zoetrope.github.io
   resources:
   - namespacedvalidatingwebhookconfigurations
   verbs:
@@ -17,7 +17,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - webhook.zoetrope.github.io
+  - admissionregistration.zoetrope.github.io
   resources:
   - namespacedvalidatingwebhookconfigurations/status
   verbs:

@@ -6,9 +6,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.6.1
   creationTimestamp: null
-  name: namespacedmutatingwebhookconfigurations.webhook.zoetrope.github.io
+  name: namespacedmutatingwebhookconfigurations.admissionregistration.zoetrope.github.io
 spec:
-  group: webhook.zoetrope.github.io
+  group: admissionregistration.zoetrope.github.io
   names:
     kind: NamespacedMutatingWebhookConfiguration
     listKind: NamespacedMutatingWebhookConfigurationList

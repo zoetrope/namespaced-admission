@@ -2,8 +2,8 @@
 # since it depends on service name and namespace that are out of this kustomize package.
 # It should be run by config/default
 resources:
-- bases/webhook.zoetrope.github.io_namespacedmutatingwebhookconfigurations.yaml
-- bases/webhook.zoetrope.github.io_namespacedvalidatingwebhookconfigurations.yaml
+- bases/admissionregistration.zoetrope.github.io_namespacedmutatingwebhookconfigurations.yaml
+- bases/admissionregistration.zoetrope.github.io_namespacedvalidatingwebhookconfigurations.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:
