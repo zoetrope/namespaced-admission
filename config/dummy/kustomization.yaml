@@ -1,0 +1,6 @@
+resources:
+  - certificate.yaml
+  - deployment.yaml
+  - namespace.yaml
+  - service.yaml
+  - webhook.yaml

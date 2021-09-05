@@ -55,7 +55,7 @@ type NamespacedValidatingWebhookConfigurationReconciler struct {
 //+kubebuilder:rbac:groups=admissionregistration.zoetrope.github.io,resources=namespacedvalidatingwebhookconfigurations,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=admissionregistration.zoetrope.github.io,resources=namespacedvalidatingwebhookconfigurations/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=admissionregistration.zoetrope.github.io,resources=namespacedvalidatingwebhookconfigurations/finalizers,verbs=update
-//+kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=validatingwebhookconfiguration,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=validatingwebhookconfigurations,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=namespaces,verbs=get;list;watch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
@@ -141,6 +141,9 @@ func (r *NamespacedValidatingWebhookConfigurationReconciler) reconcileWebhookCon
 		WithLabels(map[string]string{
 			constants.LabelCreatedBy: constants.NamespacedValidatingWebhookConfigurationControllerName,
 		})
+
+	config.WithLabels(nvw.Labels)
+	config.WithAnnotations(nvw.Annotations)
 
 	ns := &corev1.Namespace{}
 	err := r.Get(ctx, client.ObjectKey{Name: nvw.Namespace}, ns)

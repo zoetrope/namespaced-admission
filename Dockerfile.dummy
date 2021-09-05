@@ -10,20 +10,16 @@ COPY go.sum go.sum
 RUN go mod download
 
 # Copy the go source
-COPY version.go version.go
-COPY api/ api/
 COPY cmd/ cmd/
-COPY controllers/ controllers/
-COPY pkg/ pkg/
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o manager ./cmd/namespaced-webhook-controller/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o dummy-webhook ./cmd/dummy-webhook/main.go
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/static:nonroot
 WORKDIR /
-COPY --from=builder /workspace/manager .
+COPY --from=builder /workspace/dummy-webhook .
 USER 65532:65532
 
-ENTRYPOINT ["/manager"]
+ENTRYPOINT ["/dummy-webhook"]

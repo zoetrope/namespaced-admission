@@ -1,0 +1,21 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: dummy-webhook-selfsigned-issuer
+  namespace: dummy-system
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: dummy-webhook-serving-cert
+  namespace: dummy-system
+spec:
+  dnsNames:
+    - dummy-webhook-service.dummy-system.svc
+    - dummy-webhook-service.dummy-system.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: dummy-webhook-selfsigned-issuer
+  secretName: dummy-webhook-server-cert
