@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	apiadmissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -40,6 +41,10 @@ var _ webhook.Defaulter = &NamespacedMutatingWebhookConfiguration{}
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *NamespacedMutatingWebhookConfiguration) Default() {
 	namespacedmutatingwebhookconfigurationlog.Info("default", "name", r.Name)
-
-	// TODO(user): fill in your defaulting logic.
+	for i := range r.Webhooks {
+		for j := range r.Webhooks[i].Rules {
+			scope := apiadmissionregistrationv1.NamespacedScope
+			r.Webhooks[i].Rules[j].Scope = &scope
+		}
+	}
 }
