@@ -1,7 +1,7 @@
 apiVersion: webhook.zoetrope.github.io/v1
-kind: NamespacedMutatingWebhook
+kind: NamespacedMutatingWebhookConfiguration
 metadata:
-  name: namespacedmutatingwebhook-sample
+  name: namespacedmutatingwebhookconfiguration-sample
 webhooks:
   - name: baseline.mpod.kb.io
     admissionReviewVersions:

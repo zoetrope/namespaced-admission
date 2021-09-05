@@ -74,19 +74,19 @@ type MutatingWebhook struct {
 	ReinvocationPolicy *admissionv1.ReinvocationPolicyType `json:"reinvocationPolicy,omitempty"`
 }
 
-// NamespacedMutatingWebhookStatus defines the observed state of NamespacedMutatingWebhook
+// NamespacedMutatingWebhookConfigurationStatus defines the observed state of NamespacedMutatingWebhookConfiguration
 //+kubebuilder:validation:Enum=Applied
-type NamespacedMutatingWebhookStatus string
+type NamespacedMutatingWebhookConfigurationStatus string
 
 const (
-	NamespacedMutatingWebhookApplied = NamespacedMutatingWebhookStatus("Applied")
+	NamespacedMutatingWebhookConfigurationApplied = NamespacedMutatingWebhookConfigurationStatus("Applied")
 )
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// NamespacedMutatingWebhook is the Schema for the namespacedmutatingwebhooks API
-type NamespacedMutatingWebhook struct {
+// NamespacedMutatingWebhookConfiguration is the Schema for the NamespacedMutatingWebhookConfigurations API
+type NamespacedMutatingWebhookConfiguration struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
@@ -96,22 +96,22 @@ type NamespacedMutatingWebhook struct {
 	// +patchStrategy=merge
 	Webhooks []MutatingWebhook `json:"webhooks,omitempty" patchStrategy:"merge" patchMergeKey:"name"`
 
-	Status NamespacedMutatingWebhookStatus `json:"status,omitempty"`
+	Status NamespacedMutatingWebhookConfigurationStatus `json:"status,omitempty"`
 }
 
-func (w NamespacedMutatingWebhook) ConfigName() string {
+func (w NamespacedMutatingWebhookConfiguration) ConfigName() string {
 	return w.Namespace + "-" + w.Name
 }
 
 //+kubebuilder:object:root=true
 
-// NamespacedMutatingWebhookList contains a list of NamespacedMutatingWebhook
-type NamespacedMutatingWebhookList struct {
+// NamespacedMutatingWebhookConfigurationList contains a list of NamespacedMutatingWebhookConfiguration
+type NamespacedMutatingWebhookConfigurationList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []NamespacedMutatingWebhook `json:"items"`
+	Items           []NamespacedMutatingWebhookConfiguration `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&NamespacedMutatingWebhook{}, &NamespacedMutatingWebhookList{})
+	SchemeBuilder.Register(&NamespacedMutatingWebhookConfiguration{}, &NamespacedMutatingWebhookConfigurationList{})
 }

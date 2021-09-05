@@ -69,19 +69,19 @@ type ValidatingWebhook struct {
 	AdmissionReviewVersions []string `json:"admissionReviewVersions"`
 }
 
-// NamespacedValidatingWebhookStatus defines the observed state of NamespacedValidatingWebhook
+// NamespacedValidatingWebhookConfigurationStatus defines the observed state of NamespacedValidatingWebhookConfiguration
 //+kubebuilder:validation:Enum=Applied
-type NamespacedValidatingWebhookStatus string
+type NamespacedValidatingWebhookConfigurationStatus string
 
 const (
-	NamespacedValidatingWebhookApplied = NamespacedValidatingWebhookStatus("Applied")
+	NamespacedValidatingWebhookConfigurationApplied = NamespacedValidatingWebhookConfigurationStatus("Applied")
 )
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// NamespacedValidatingWebhook is the Schema for the namespacedvalidatingwebhooks API
-type NamespacedValidatingWebhook struct {
+// NamespacedValidatingWebhookConfiguration is the Schema for the namespacedvalidatingwebhookconfigurations API
+type NamespacedValidatingWebhookConfiguration struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
@@ -91,22 +91,22 @@ type NamespacedValidatingWebhook struct {
 	// +patchStrategy=merge
 	Webhooks []ValidatingWebhook `json:"webhooks,omitempty" patchStrategy:"merge" patchMergeKey:"name"`
 
-	Status NamespacedValidatingWebhookStatus `json:"status,omitempty"`
+	Status NamespacedValidatingWebhookConfigurationStatus `json:"status,omitempty"`
 }
 
-func (w NamespacedValidatingWebhook) ConfigName() string {
+func (w NamespacedValidatingWebhookConfiguration) ConfigName() string {
 	return w.Namespace + "-" + w.Name
 }
 
 //+kubebuilder:object:root=true
 
-// NamespacedValidatingWebhookList contains a list of NamespacedValidatingWebhook
-type NamespacedValidatingWebhookList struct {
+// NamespacedValidatingWebhookConfigurationList contains a list of NamespacedValidatingWebhookConfiguration
+type NamespacedValidatingWebhookConfigurationList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []NamespacedValidatingWebhook `json:"items"`
+	Items           []NamespacedValidatingWebhookConfiguration `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&NamespacedValidatingWebhook{}, &NamespacedValidatingWebhookList{})
+	SchemeBuilder.Register(&NamespacedValidatingWebhookConfiguration{}, &NamespacedValidatingWebhookConfigurationList{})
 }

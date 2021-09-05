@@ -31,9 +31,17 @@ rules:
   - update
   - watch
 - apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - webhook.zoetrope.github.io
   resources:
-  - namespacedmutatingwebhooks
+  - namespacedmutatingwebhookconfigurations
   verbs:
   - create
   - delete
@@ -45,13 +53,13 @@ rules:
 - apiGroups:
   - webhook.zoetrope.github.io
   resources:
-  - namespacedmutatingwebhooks/finalizers
+  - namespacedmutatingwebhookconfigurations/finalizers
   verbs:
   - update
 - apiGroups:
   - webhook.zoetrope.github.io
   resources:
-  - namespacedmutatingwebhooks/status
+  - namespacedmutatingwebhookconfigurations/status
   verbs:
   - get
   - patch
@@ -59,7 +67,7 @@ rules:
 - apiGroups:
   - webhook.zoetrope.github.io
   resources:
-  - namespacedvalidatingwebhooks
+  - namespacedvalidatingwebhookconfigurations
   verbs:
   - create
   - delete
@@ -71,13 +79,13 @@ rules:
 - apiGroups:
   - webhook.zoetrope.github.io
   resources:
-  - namespacedvalidatingwebhooks/finalizers
+  - namespacedvalidatingwebhookconfigurations/finalizers
   verbs:
   - update
 - apiGroups:
   - webhook.zoetrope.github.io
   resources:
-  - namespacedvalidatingwebhooks/status
+  - namespacedvalidatingwebhookconfigurations/status
   verbs:
   - get
   - patch

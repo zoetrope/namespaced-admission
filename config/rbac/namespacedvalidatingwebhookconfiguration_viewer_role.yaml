@@ -1,24 +1,20 @@
-# permissions for end users to edit namespacedmutatingwebhooks.
+# permissions for end users to view namespacedvalidatingwebhookconfigurations.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: namespacedmutatingwebhook-editor-role
+  name: namespacedvalidatingwebhookconfiguration-viewer-role
 rules:
 - apiGroups:
   - webhook.zoetrope.github.io
   resources:
-  - namespacedmutatingwebhooks
+  - namespacedvalidatingwebhookconfigurations
   verbs:
-  - create
-  - delete
   - get
   - list
-  - patch
-  - update
   - watch
 - apiGroups:
   - webhook.zoetrope.github.io
   resources:
-  - namespacedmutatingwebhooks/status
+  - namespacedvalidatingwebhookconfigurations/status
   verbs:
   - get

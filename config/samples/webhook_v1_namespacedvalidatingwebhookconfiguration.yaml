@@ -1,7 +1,7 @@
 apiVersion: webhook.zoetrope.github.io/v1
-kind: NamespacedValidatingWebhook
+kind: NamespacedValidatingWebhookConfiguration
 metadata:
-  name: namespacedvalidatingwebhook-sample
+  name: namespacedvalidatingwebhookconfiguration-sample
 webhooks:
   - name: baseline.vpod.kb.io
     admissionReviewVersions:

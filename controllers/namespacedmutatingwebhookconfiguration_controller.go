@@ -46,32 +46,32 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-// NamespacedMutatingWebhookReconciler reconciles a NamespacedMutatingWebhook object
-type NamespacedMutatingWebhookReconciler struct {
+// NamespacedMutatingWebhookConfigurationReconciler reconciles a NamespacedMutatingWebhookConfiguration object
+type NamespacedMutatingWebhookConfigurationReconciler struct {
 	client.Client
 	Scheme         *runtime.Scheme
 	TargetLabelKey string
 }
 
-//+kubebuilder:rbac:groups=webhook.zoetrope.github.io,resources=namespacedmutatingwebhooks,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=webhook.zoetrope.github.io,resources=namespacedmutatingwebhooks/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=webhook.zoetrope.github.io,resources=namespacedmutatingwebhooks/finalizers,verbs=update
+//+kubebuilder:rbac:groups=webhook.zoetrope.github.io,resources=namespacedmutatingwebhookconfigurations,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=webhook.zoetrope.github.io,resources=namespacedmutatingwebhookconfigurations/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=webhook.zoetrope.github.io,resources=namespacedmutatingwebhookconfigurations/finalizers,verbs=update
 //+kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=mutatingwebhookconfiguration,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=namespaces,verbs=get;list;watch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 // TODO(user): Modify the Reconcile function to compare the state specified by
-// the NamespacedMutatingWebhook object against the actual cluster state, and then
+// the NamespacedMutatingWebhookConfiguration object against the actual cluster state, and then
 // perform operations to make the cluster state reflect the state specified by
 // the user.
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.8.3/pkg/reconcile
-func (r *NamespacedMutatingWebhookReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *NamespacedMutatingWebhookConfigurationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
-	var nmw webhookv1.NamespacedMutatingWebhook
+	var nmw webhookv1.NamespacedMutatingWebhookConfiguration
 	err := r.Get(ctx, req.NamespacedName, &nmw)
 	if err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -103,7 +103,7 @@ func (r *NamespacedMutatingWebhookReconciler) Reconcile(ctx context.Context, req
 	return ctrl.Result{}, nil
 }
 
-func (r *NamespacedMutatingWebhookReconciler) finalize(ctx context.Context, nvw webhookv1.NamespacedMutatingWebhook) error {
+func (r *NamespacedMutatingWebhookConfigurationReconciler) finalize(ctx context.Context, nvw webhookv1.NamespacedMutatingWebhookConfiguration) error {
 	if !controllerutil.ContainsFinalizer(&nvw, constants.Finalizer) {
 		return nil
 	}
@@ -138,14 +138,14 @@ CLEANUP:
 	return r.Update(ctx, &nvw)
 }
 
-func (r *NamespacedMutatingWebhookReconciler) reconcileWebhookConfiguration(ctx context.Context, nmw webhookv1.NamespacedMutatingWebhook) error {
+func (r *NamespacedMutatingWebhookConfigurationReconciler) reconcileWebhookConfiguration(ctx context.Context, nmw webhookv1.NamespacedMutatingWebhookConfiguration) error {
 	logger := log.FromContext(ctx)
 
 	configName := nmw.Namespace + "-" + nmw.Name
 
 	config := admissionv1apply.MutatingWebhookConfiguration(configName).
 		WithLabels(map[string]string{
-			constants.LabelCreatedBy: constants.NamespacedMutatingWebhookControllerName,
+			constants.LabelCreatedBy: constants.NamespacedMutatingWebhookConfigurationControllerName,
 		})
 
 	ns := &corev1.Namespace{}
@@ -190,7 +190,7 @@ func (r *NamespacedMutatingWebhookReconciler) reconcileWebhookConfiguration(ctx 
 		return err
 	}
 
-	currApplyConfig, err := admissionv1apply.ExtractMutatingWebhookConfiguration(&current, constants.NamespacedMutatingWebhookControllerName)
+	currApplyConfig, err := admissionv1apply.ExtractMutatingWebhookConfiguration(&current, constants.NamespacedMutatingWebhookConfigurationControllerName)
 	if err != nil {
 		return err
 	}
@@ -200,7 +200,7 @@ func (r *NamespacedMutatingWebhookReconciler) reconcileWebhookConfiguration(ctx 
 	}
 
 	err = r.Patch(ctx, patch, client.Apply, &client.PatchOptions{
-		FieldManager: constants.NamespacedMutatingWebhookControllerName,
+		FieldManager: constants.NamespacedMutatingWebhookConfigurationControllerName,
 		Force:        pointer.Bool(true),
 	})
 	if err != nil {
@@ -213,7 +213,7 @@ func (r *NamespacedMutatingWebhookReconciler) reconcileWebhookConfiguration(ctx 
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *NamespacedMutatingWebhookReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *NamespacedMutatingWebhookConfigurationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	cfgHandler := func(obj client.Object, q workqueue.RateLimitingInterface) {
 		ns := obj.GetLabels()[constants.LabelOwnerNamespace]
 		if ns == "" {
@@ -230,7 +230,7 @@ func (r *NamespacedMutatingWebhookReconciler) SetupWithManager(mgr ctrl.Manager)
 	}
 
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&webhookv1.NamespacedMutatingWebhook{}).
+		For(&webhookv1.NamespacedMutatingWebhookConfiguration{}).
 		Watches(&source.Kind{Type: &admissionv1.MutatingWebhookConfiguration{}}, handler.Funcs{
 			UpdateFunc: func(ev event.UpdateEvent, q workqueue.RateLimitingInterface) {
 				if ev.ObjectNew.GetDeletionTimestamp() != nil {

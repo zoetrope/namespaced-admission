@@ -53,19 +53,19 @@ func subMain() error {
 		return fmt.Errorf("unable to start manager: %w", err)
 	}
 
-	if err = (&controllers.NamespacedMutatingWebhookReconciler{
+	if err = (&controllers.NamespacedMutatingWebhookConfigurationReconciler{
 		Client:         mgr.GetClient(),
 		Scheme:         mgr.GetScheme(),
 		TargetLabelKey: options.targetLabelKey,
 	}).SetupWithManager(mgr); err != nil {
-		return fmt.Errorf("unable to create NamespacedMutatingWebhook controller: %w", err)
+		return fmt.Errorf("unable to create NamespacedMutatingWebhookConfiguration controller: %w", err)
 	}
-	if err = (&controllers.NamespacedValidatingWebhookReconciler{
+	if err = (&controllers.NamespacedValidatingWebhookConfigurationReconciler{
 		Client:         mgr.GetClient(),
 		Scheme:         mgr.GetScheme(),
 		TargetLabelKey: options.targetLabelKey,
 	}).SetupWithManager(mgr); err != nil {
-		return fmt.Errorf("unable to create NamespacedValidatingWebhook controller: %w", err)
+		return fmt.Errorf("unable to create NamespacedValidatingWebhookConfiguration controller: %w", err)
 	}
 	//+kubebuilder:scaffold:builder
 

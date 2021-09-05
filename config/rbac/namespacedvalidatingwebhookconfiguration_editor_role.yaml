@@ -1,13 +1,13 @@
-# permissions for end users to edit namespacedvalidatingwebhooks.
+# permissions for end users to edit namespacedvalidatingwebhookconfigurations.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: namespacedvalidatingwebhook-editor-role
+  name: namespacedvalidatingwebhookconfiguration-editor-role
 rules:
 - apiGroups:
   - webhook.zoetrope.github.io
   resources:
-  - namespacedvalidatingwebhooks
+  - namespacedvalidatingwebhookconfigurations
   verbs:
   - create
   - delete
@@ -19,6 +19,6 @@ rules:
 - apiGroups:
   - webhook.zoetrope.github.io
   resources:
-  - namespacedvalidatingwebhooks/status
+  - namespacedvalidatingwebhookconfigurations/status
   verbs:
   - get

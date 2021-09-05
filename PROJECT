@@ -10,7 +10,7 @@ resources:
   controller: true
   domain: zoetrope.github.io
   group: webhook
-  kind: NamespacedMutatingWebhook
+  kind: NamespacedMutatingWebhookConfiguration
   path: github.com/zoetrope/namespaced-webhook/api/v1
   version: v1
 - api:
@@ -19,7 +19,7 @@ resources:
   controller: true
   domain: zoetrope.github.io
   group: webhook
-  kind: NamespacedValidatingWebhook
+  kind: NamespacedValidatingWebhookConfiguration
   path: github.com/zoetrope/namespaced-webhook/api/v1
   version: v1
 version: "3"
