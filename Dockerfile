@@ -14,6 +14,7 @@ COPY version.go version.go
 COPY api/ api/
 COPY cmd/ cmd/
 COPY controllers/ controllers/
+COPY hooks/ hooks/
 COPY pkg/ pkg/
 
 # Build
