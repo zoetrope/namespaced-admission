@@ -54,14 +54,16 @@ func subMain() error {
 	}
 
 	if err = (&controllers.NamespacedMutatingWebhookReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:         mgr.GetClient(),
+		Scheme:         mgr.GetScheme(),
+		TargetLabelKey: options.targetLabelKey,
 	}).SetupWithManager(mgr); err != nil {
 		return fmt.Errorf("unable to create NamespacedMutatingWebhook controller: %w", err)
 	}
 	if err = (&controllers.NamespacedValidatingWebhookReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:         mgr.GetClient(),
+		Scheme:         mgr.GetScheme(),
+		TargetLabelKey: options.targetLabelKey,
 	}).SetupWithManager(mgr); err != nil {
 		return fmt.Errorf("unable to create NamespacedValidatingWebhook controller: %w", err)
 	}

@@ -48,13 +48,15 @@ import (
 // NamespacedValidatingWebhookReconciler reconciles a NamespacedValidatingWebhook object
 type NamespacedValidatingWebhookReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme         *runtime.Scheme
+	TargetLabelKey string
 }
 
 //+kubebuilder:rbac:groups=webhook.zoetrope.github.io,resources=namespacedvalidatingwebhooks,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=webhook.zoetrope.github.io,resources=namespacedvalidatingwebhooks/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=webhook.zoetrope.github.io,resources=namespacedvalidatingwebhooks/finalizers,verbs=update
 //+kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=validatingwebhookconfiguration,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=namespaces,verbs=get;list;watch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -140,6 +142,16 @@ func (r *NamespacedValidatingWebhookReconciler) reconcileWebhookConfiguration(ct
 			constants.LabelCreatedBy: constants.NamespacedValidatingWebhookControllerName,
 		})
 
+	ns := &corev1.Namespace{}
+	err := r.Get(ctx, client.ObjectKey{Name: nvw.Namespace}, ns)
+	if err != nil {
+		return err
+	}
+	labelValue := ns.Labels[r.TargetLabelKey]
+	if labelValue == "" {
+		return fmt.Errorf("namespace '%s' does not have '%s' label", ns.Name, r.TargetLabelKey)
+	}
+
 	webhooks := make([]*admissionv1apply.ValidatingWebhookApplyConfiguration, 0)
 	for _, hook := range nvw.Webhooks {
 		webhook := admissionv1apply.ValidatingWebhook()
@@ -149,9 +161,9 @@ func (r *NamespacedValidatingWebhookReconciler) reconcileWebhookConfiguration(ct
 		}
 		webhook.WithNamespaceSelector(metav1apply.LabelSelector().
 			WithMatchExpressions(metav1apply.LabelSelectorRequirement().
-				WithKey(corev1.LabelMetadataName).
+				WithKey(r.TargetLabelKey).
 				WithOperator(metav1.LabelSelectorOpIn).
-				WithValues(nvw.Namespace),
+				WithValues(labelValue),
 			),
 		)
 		webhooks = append(webhooks, webhook)

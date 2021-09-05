@@ -49,13 +49,15 @@ import (
 // NamespacedMutatingWebhookReconciler reconciles a NamespacedMutatingWebhook object
 type NamespacedMutatingWebhookReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme         *runtime.Scheme
+	TargetLabelKey string
 }
 
 //+kubebuilder:rbac:groups=webhook.zoetrope.github.io,resources=namespacedmutatingwebhooks,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=webhook.zoetrope.github.io,resources=namespacedmutatingwebhooks/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=webhook.zoetrope.github.io,resources=namespacedmutatingwebhooks/finalizers,verbs=update
 //+kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=mutatingwebhookconfiguration,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=namespaces,verbs=get;list;watch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -146,6 +148,16 @@ func (r *NamespacedMutatingWebhookReconciler) reconcileWebhookConfiguration(ctx 
 			constants.LabelCreatedBy: constants.NamespacedMutatingWebhookControllerName,
 		})
 
+	ns := &corev1.Namespace{}
+	err := r.Get(ctx, client.ObjectKey{Name: nmw.Namespace}, ns)
+	if err != nil {
+		return err
+	}
+	labelValue := ns.Labels[r.TargetLabelKey]
+	if labelValue == "" {
+		return fmt.Errorf("namespace '%s' does not have '%s' label", ns.Name, r.TargetLabelKey)
+	}
+
 	webhooks := make([]*admissionv1apply.MutatingWebhookApplyConfiguration, 0)
 	for _, hook := range nmw.Webhooks {
 		webhook := admissionv1apply.MutatingWebhook()
@@ -155,9 +167,9 @@ func (r *NamespacedMutatingWebhookReconciler) reconcileWebhookConfiguration(ctx 
 		}
 		webhook.WithNamespaceSelector(metav1apply.LabelSelector().
 			WithMatchExpressions(metav1apply.LabelSelectorRequirement().
-				WithKey(corev1.LabelMetadataName).
+				WithKey(r.TargetLabelKey).
 				WithOperator(metav1.LabelSelectorOpIn).
-				WithValues(nmw.Namespace),
+				WithValues(labelValue),
 			),
 		)
 		webhooks = append(webhooks, webhook)
