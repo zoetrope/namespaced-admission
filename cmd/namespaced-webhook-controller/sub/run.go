@@ -67,6 +67,12 @@ func subMain() error {
 	}).SetupWithManager(mgr); err != nil {
 		return fmt.Errorf("unable to create NamespacedValidatingWebhookConfiguration controller: %w", err)
 	}
+	if err = (&webhookv1.NamespacedMutatingWebhookConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
+		return fmt.Errorf("unable to create NamespacedMutatingWebhookConfiguration webhook: %w", err)
+	}
+	if err = (&webhookv1.NamespacedValidatingWebhookConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
+		return fmt.Errorf("unable to create NamespacedValidatingWebhookConfiguration webhook: %w", err)
+	}
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
