@@ -14,11 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1
+package hooks
 
 import (
 	"context"
 	"crypto/tls"
+	_ "embed"
 	"fmt"
 	"net"
 	"path/filepath"
@@ -30,6 +31,9 @@ import (
 
 	//+kubebuilder:scaffold:imports
 
+	"github.com/zoetrope/namespaced-webhook/api/v1"
+	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -37,6 +41,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
+	"sigs.k8s.io/yaml"
 )
 
 // These tests use Ginkgo (BDD-style Go testing framework). Refer to
@@ -45,6 +51,15 @@ import (
 var k8sClient client.Client
 var testEnv *envtest.Environment
 var cancelMgr context.CancelFunc
+
+//go:embed testdata/role.yaml
+var roleYAML []byte
+
+//go:embed testdata/role_binding.yaml
+var roleBindingYAML []byte
+
+//go:embed testdata/service_account.yaml
+var serviceAccountYAML []byte
 
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -60,10 +75,10 @@ var _ = BeforeSuite(func() {
 
 	By("bootstrapping test environment")
 	testEnv = &envtest.Environment{
-		CRDDirectoryPaths:     []string{filepath.Join("..", "..", "config", "crd", "bases")},
+		CRDDirectoryPaths:     []string{filepath.Join("..", "config", "crd", "bases")},
 		ErrorIfCRDPathMissing: false,
 		WebhookInstallOptions: envtest.WebhookInstallOptions{
-			Paths: []string{filepath.Join("..", "..", "config", "webhook")},
+			Paths: []string{filepath.Join("..", "config", "webhook")},
 		},
 	}
 
@@ -74,7 +89,7 @@ var _ = BeforeSuite(func() {
 	scheme := runtime.NewScheme()
 	err = clientgoscheme.AddToScheme(scheme)
 	Expect(err).NotTo(HaveOccurred())
-	err = AddToScheme(scheme)
+	err = v1.AddToScheme(scheme)
 	Expect(err).NotTo(HaveOccurred())
 
 	//+kubebuilder:scaffold:scheme
@@ -95,11 +110,11 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).NotTo(HaveOccurred())
 
-	err = (&NamespacedMutatingWebhookConfiguration{}).SetupWebhookWithManager(mgr)
+	dec, err := admission.NewDecoder(scheme)
 	Expect(err).NotTo(HaveOccurred())
 
-	err = (&NamespacedValidatingWebhookConfiguration{}).SetupWebhookWithManager(mgr)
-	Expect(err).NotTo(HaveOccurred())
+	SetupNamespacedMutatingWebhookConfigurationWebhook(mgr, cfg, dec)
+	SetupNamespacedValidatingWebhookConfigurationWebhook(mgr, cfg, dec)
 
 	//+kubebuilder:scaffold:webhook
 
@@ -109,6 +124,29 @@ var _ = BeforeSuite(func() {
 			Expect(err).NotTo(HaveOccurred())
 		}
 	}()
+
+	ns := &corev1.Namespace{}
+	ns.Name = "webhook-test"
+	err = k8sClient.Create(ctx, ns)
+	Expect(err).NotTo(HaveOccurred())
+
+	sa := &corev1.ServiceAccount{}
+	err = yaml.Unmarshal(serviceAccountYAML, sa)
+	Expect(err).NotTo(HaveOccurred())
+	err = k8sClient.Create(ctx, sa)
+	Expect(err).NotTo(HaveOccurred())
+
+	role := &rbacv1.Role{}
+	err = yaml.Unmarshal(roleYAML, role)
+	Expect(err).NotTo(HaveOccurred())
+	err = k8sClient.Create(ctx, role)
+	Expect(err).NotTo(HaveOccurred())
+
+	roleBinding := &rbacv1.RoleBinding{}
+	err = yaml.Unmarshal(roleBindingYAML, roleBinding)
+	Expect(err).NotTo(HaveOccurred())
+	err = k8sClient.Create(ctx, roleBinding)
+	Expect(err).NotTo(HaveOccurred())
 
 	// wait for the webhook server to get ready
 	dialer := &net.Dialer{Timeout: time.Second}

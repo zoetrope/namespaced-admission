@@ -26,7 +26,6 @@ import (
 	. "github.com/onsi/gomega/gstruct"
 	webhookv1 "github.com/zoetrope/namespaced-webhook/api/v1"
 	admissionv1 "k8s.io/api/admissionregistration/v1"
-	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/yaml"
@@ -74,16 +73,9 @@ var _ = Describe("NamespacedValidatingWebhookConfiguration controller", func() {
 	})
 
 	It("should create and delete ValidatingWebhookConfiguration", func() {
-		ns := &corev1.Namespace{}
-		ns.Name = "test2"
-		ns.Labels = map[string]string{
-			"target": "foo",
-		}
-		err := k8sClient.Create(ctx, ns)
-		Expect(err).NotTo(HaveOccurred())
 
 		nmw := &webhookv1.NamespacedValidatingWebhookConfiguration{}
-		err = yaml.Unmarshal(validatingYAML, nmw)
+		err := yaml.Unmarshal(validatingYAML, nmw)
 		Expect(err).NotTo(HaveOccurred())
 
 		err = k8sClient.Create(ctx, nmw)
