@@ -73,6 +73,7 @@ func (m *namespacedMutatingWebhookConfigurationMutator) Handle(ctx context.Conte
 }
 
 //+kubebuilder:webhook:path=/validate-admissionregistration-zoetrope-github-io-v1-namespacedmutatingwebhookconfiguration,mutating=false,failurePolicy=fail,sideEffects=None,groups=admissionregistration.zoetrope.github.io,resources=namespacedmutatingwebhookconfigurations,verbs=create;update,versions=v1,name=vnamespacedmutatingwebhookconfiguration.kb.io,admissionReviewVersions={v1,v1beta1}
+//+kubebuilder:rbac:groups=core,resources=serviceaccounts;users;groups,verbs=impersonate
 
 type namespacedMutatingWebhookConfigurationValidator struct {
 	config *rest.Config
@@ -124,7 +125,7 @@ func (v *namespacedMutatingWebhookConfigurationValidator) validate(ctx context.C
 								return apierrors.NewInternalError(err)
 							}
 							if !accessible {
-								errs = append(errs, field.Forbidden(p, fmt.Sprintf("cannot %s %s/%s/%s in %s", verb, group, ver, res, nmw.Namespace)))
+								errs = append(errs, field.Forbidden(p, fmt.Sprintf("%s cannot %s %s/%s/%s in %s", userName, verb, group, ver, res, nmw.Namespace)))
 							}
 						}
 					}

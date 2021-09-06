@@ -98,7 +98,7 @@ type NamespacedMutatingWebhookConfiguration struct {
 
 	// ServiceAccountName is the name of the ServiceAccount to use to check access to resources that this webhook will validate
 	// +kubebuilder:default="default"
-	ServiceAccountName string `json:"ServiceAccountName"`
+	ServiceAccountName string `json:"serviceAccountName"`
 
 	Status NamespacedMutatingWebhookConfigurationStatus `json:"status,omitempty"`
 }

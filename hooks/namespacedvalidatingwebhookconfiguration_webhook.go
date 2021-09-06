@@ -73,6 +73,7 @@ func (m *namespacedValidatingWebhookConfigurationMutator) Handle(ctx context.Con
 }
 
 //+kubebuilder:webhook:path=/validate-admissionregistration-zoetrope-github-io-v1-namespacedvalidatingwebhookconfiguration,mutating=false,failurePolicy=fail,sideEffects=None,groups=admissionregistration.zoetrope.github.io,resources=namespacedvalidatingwebhookconfigurations,verbs=create;update,versions=v1,name=vnamespacedvalidatingwebhookconfiguration.kb.io,admissionReviewVersions={v1,v1beta1}
+//+kubebuilder:rbac:groups=core,resources=users;serviceaccounts;groups,verbs=impersonate
 
 type namespacedValidatingWebhookConfigurationValidator struct {
 	config *rest.Config
@@ -100,8 +101,8 @@ func (v *namespacedValidatingWebhookConfigurationValidator) Handle(ctx context.C
 	return admission.Allowed("ok")
 }
 
-func (v *namespacedValidatingWebhookConfigurationValidator) validate(ctx context.Context, rvw *v1.NamespacedValidatingWebhookConfiguration, verbs []string) error {
-	userName := "system:serviceaccount:" + rvw.Namespace + ":" + rvw.ServiceAccountName
+func (v *namespacedValidatingWebhookConfigurationValidator) validate(ctx context.Context, nvw *v1.NamespacedValidatingWebhookConfiguration, verbs []string) error {
+	userName := "system:serviceaccount:" + nvw.Namespace + ":" + nvw.ServiceAccountName
 	config := rest.CopyConfig(v.config)
 	config.Impersonate.UserName = userName
 	validatingLogger.Info("validate", "userName", userName)
@@ -112,19 +113,19 @@ func (v *namespacedValidatingWebhookConfigurationValidator) validate(ctx context
 	authClient := cl.AuthorizationV1()
 
 	var errs field.ErrorList
-	for i, hook := range rvw.Webhooks {
+	for i, hook := range nvw.Webhooks {
 		for j, rule := range hook.Rules {
 			p := field.NewPath("webhook").Index(i).Child("rules").Index(j)
 			for _, group := range rule.APIGroups {
 				for _, ver := range rule.APIVersions {
 					for _, res := range rule.Resources {
 						for _, verb := range verbs {
-							accessible, err := canAccess(ctx, authClient, verb, group, ver, res, rvw.Namespace)
+							accessible, err := canAccess(ctx, authClient, verb, group, ver, res, nvw.Namespace)
 							if err != nil {
 								return apierrors.NewInternalError(err)
 							}
 							if !accessible {
-								errs = append(errs, field.Forbidden(p, fmt.Sprintf("cannot %s %s/%s/%s in %s", verb, group, ver, res, rvw.Namespace)))
+								errs = append(errs, field.Forbidden(p, fmt.Sprintf("%s cannot %s %s/%s/%s in %s", userName, verb, group, ver, res, nvw.Namespace)))
 							}
 						}
 					}
@@ -134,8 +135,8 @@ func (v *namespacedValidatingWebhookConfigurationValidator) validate(ctx context
 	}
 
 	if len(errs) > 0 {
-		err := apierrors.NewInvalid(schema.GroupKind{Group: v1.GroupVersion.Group, Kind: "NamespacedValidatingWebhookConfiguration"}, rvw.Name, errs)
-		validatingLogger.Error(err, "validation error", "name", rvw.Name)
+		err := apierrors.NewInvalid(schema.GroupKind{Group: v1.GroupVersion.Group, Kind: "NamespacedValidatingWebhookConfiguration"}, nvw.Name, errs)
+		validatingLogger.Error(err, "validation error", "name", nvw.Name)
 		return err
 	}
 

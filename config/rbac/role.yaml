@@ -85,6 +85,14 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - groups
+  - serviceaccounts
+  - users
+  verbs:
+  - impersonate
+- apiGroups:
+  - ""
+  resources:
   - namespaces
   verbs:
   - get

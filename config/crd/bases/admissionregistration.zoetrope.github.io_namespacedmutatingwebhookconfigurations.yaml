@@ -22,11 +22,6 @@ spec:
         description: NamespacedMutatingWebhookConfiguration is the Schema for the
           NamespacedMutatingWebhookConfigurations API
         properties:
-          ServiceAccountName:
-            default: default
-            description: ServiceAccountName is the name of the ServiceAccount to use
-              to check access to resources that this webhook will validate
-            type: string
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
               of an object. Servers should convert recognized schemas to the latest
@@ -39,6 +34,11 @@ spec:
             type: string
           metadata:
             type: object
+          serviceAccountName:
+            default: default
+            description: ServiceAccountName is the name of the ServiceAccount to use
+              to check access to resources that this webhook will validate
+            type: string
           status:
             description: NamespacedMutatingWebhookConfigurationStatus defines the
               observed state of NamespacedMutatingWebhookConfiguration
@@ -176,7 +176,7 @@ spec:
               type: object
             type: array
         required:
-        - ServiceAccountName
+        - serviceAccountName
         type: object
     served: true
     storage: true
