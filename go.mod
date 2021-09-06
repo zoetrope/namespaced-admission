@@ -1,4 +1,4 @@
-module github.com/zoetrope/namespaced-webhook
+module github.com/zoetrope/namespaced-admission
 
 go 1.16
 

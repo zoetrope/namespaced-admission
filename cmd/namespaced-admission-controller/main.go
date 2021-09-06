@@ -16,7 +16,7 @@ limitations under the License.
 
 package main
 
-import "github.com/zoetrope/namespaced-webhook/cmd/namespaced-webhook-controller/sub"
+import "github.com/zoetrope/namespaced-admission/cmd/namespaced-admission-controller/sub"
 
 func main() {
 	sub.Execute()

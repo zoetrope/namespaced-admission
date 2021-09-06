@@ -1,1 +1,1 @@
-# namespaced-webhook
+# namespaced-admission

@@ -9,9 +9,9 @@ import (
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
-	webhookv1 "github.com/zoetrope/namespaced-webhook/api/v1"
-	"github.com/zoetrope/namespaced-webhook/controllers"
-	"github.com/zoetrope/namespaced-webhook/hooks"
+	webhookv1 "github.com/zoetrope/namespaced-admission/api/v1"
+	"github.com/zoetrope/namespaced-admission/controllers"
+	"github.com/zoetrope/namespaced-admission/hooks"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"

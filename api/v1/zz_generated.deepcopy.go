@@ -21,7 +21,7 @@ limitations under the License.
 package v1
 
 import (
-	"github.com/zoetrope/namespaced-webhook/pkg/utils"
+	"github.com/zoetrope/namespaced-admission/pkg/utils"
 	apiadmissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	admissionregistrationv1 "k8s.io/client-go/applyconfigurations/admissionregistration/v1"

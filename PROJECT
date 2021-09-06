@@ -1,8 +1,8 @@
 domain: zoetrope.github.io
 layout:
 - go.kubebuilder.io/v3
-projectName: namespaced-webhook
-repo: github.com/zoetrope/namespaced-webhook
+projectName: namespaced-admission
+repo: github.com/zoetrope/namespaced-admission
 resources:
 - api:
     crdVersion: v1
@@ -11,7 +11,7 @@ resources:
   domain: zoetrope.github.io
   group: admissionregistration
   kind: NamespacedMutatingWebhookConfiguration
-  path: github.com/zoetrope/namespaced-webhook/api/v1
+  path: github.com/zoetrope/namespaced-admission/api/v1
   version: v1
   webhooks:
     defaulting: true
@@ -23,7 +23,7 @@ resources:
   domain: zoetrope.github.io
   group: admissionregistration
   kind: NamespacedValidatingWebhookConfiguration
-  path: github.com/zoetrope/namespaced-webhook/api/v1
+  path: github.com/zoetrope/namespaced-admission/api/v1
   version: v1
   webhooks:
     defaulting: true

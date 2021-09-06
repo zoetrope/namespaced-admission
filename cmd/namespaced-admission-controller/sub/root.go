@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	namespaced_webhook "github.com/zoetrope/namespaced-webhook"
+	namespaced_webhook "github.com/zoetrope/namespaced-admission"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -24,10 +24,10 @@ var options struct {
 }
 
 var rootCmd = &cobra.Command{
-	Use:     "namespaced-webhook-controller",
+	Use:     "namespaced-admission-controller",
 	Version: namespaced_webhook.Version,
-	Short:   "namespaced-webhook controller",
-	Long:    `namespaced-webhook controller`,
+	Short:   "namespaced-admission controller",
+	Long:    `namespaced-admission controller`,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
@@ -52,7 +52,7 @@ func init() {
 	fs.BoolVar(&options.enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
-	fs.StringVar(&options.leaderElectionID, "leader-election-id", "namespaced-webhook", "ID for leader election by controller-runtime")
+	fs.StringVar(&options.leaderElectionID, "leader-election-id", "namespaced-admission", "ID for leader election by controller-runtime")
 	fs.StringVar(&options.webhookAddr, "webhook-bind-address", ":9443", "Listen address for the webhook endpoint")
 	fs.StringVar(&options.certDir, "cert-dir", "", "webhook certificate directory")
 
