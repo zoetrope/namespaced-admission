@@ -56,10 +56,10 @@ test: setup-envtest ## Run tests.
 ##@ Build
 
 build: fmt vet ## Build manager binary.
-	go build -o bin/manager ./cmd/namespaced-webhook-controller
+	go build -o bin/manager ./cmd/namespaced-admission-controller
 
 run: ## Run a controller from your host.
-	go run ./cmd/namespaced-webhook-controller/main.go
+	go run ./cmd/namespaced-admission-controller/main.go
 
 docker-build: ## Build docker image with the manager.
 	docker build -t ${IMG} .

@@ -20,9 +20,9 @@ import (
 	"context"
 	"fmt"
 
-	webhookv1 "github.com/zoetrope/namespaced-webhook/api/v1"
-	"github.com/zoetrope/namespaced-webhook/pkg/constants"
-	"github.com/zoetrope/namespaced-webhook/pkg/utils"
+	webhookv1 "github.com/zoetrope/namespaced-admission/api/v1"
+	"github.com/zoetrope/namespaced-admission/pkg/constants"
+	"github.com/zoetrope/namespaced-admission/pkg/utils"
 	admissionv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"

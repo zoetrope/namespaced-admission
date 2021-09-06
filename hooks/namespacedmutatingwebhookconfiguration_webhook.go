@@ -23,7 +23,7 @@ import (
 	"net/http"
 	"strings"
 
-	v1 "github.com/zoetrope/namespaced-webhook/api/v1"
+	v1 "github.com/zoetrope/namespaced-admission/api/v1"
 	admissionv1 "k8s.io/api/admission/v1"
 	apiadmissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"

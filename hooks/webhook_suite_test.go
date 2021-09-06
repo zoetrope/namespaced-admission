@@ -31,7 +31,7 @@ import (
 
 	//+kubebuilder:scaffold:imports
 
-	"github.com/zoetrope/namespaced-webhook/api/v1"
+	"github.com/zoetrope/namespaced-admission/api/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime"

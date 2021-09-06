@@ -1,6 +1,6 @@
 package constants
 
-const MetaPrefix = "namespaced-webhook.zoetrope.github.io/"
+const MetaPrefix = "namespaced-admission.zoetrope.github.io/"
 
 const (
 	LabelCreatedBy      = "app.kubernetes.io/created-by"
