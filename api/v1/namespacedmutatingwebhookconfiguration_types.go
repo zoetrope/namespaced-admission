@@ -96,6 +96,10 @@ type NamespacedMutatingWebhookConfiguration struct {
 	// +patchStrategy=merge
 	Webhooks []MutatingWebhook `json:"webhooks,omitempty" patchStrategy:"merge" patchMergeKey:"name"`
 
+	// ServiceAccountName is the name of the ServiceAccount to use to check access to resources that this webhook will validate
+	// +kubebuilder:default="default"
+	ServiceAccountName string `json:"ServiceAccountName"`
+
 	Status NamespacedMutatingWebhookConfigurationStatus `json:"status,omitempty"`
 }
 

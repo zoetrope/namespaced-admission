@@ -34,6 +34,7 @@ webhooks:
         - key: app.kubernetes.io/name
           operator: NotIn
           values: ["dummy-webhook"]
+serviceAccountName: dummy
 ---
 apiVersion: admissionregistration.zoetrope.github.io/v1
 kind: NamespacedValidatingWebhookConfiguration
@@ -70,3 +71,4 @@ webhooks:
         - key: app.kubernetes.io/name
           operator: NotIn
           values: ["dummy-webhook"]
+serviceAccountName: dummy

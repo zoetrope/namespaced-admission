@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1
+package hooks
 
 import (
 	"context"
@@ -22,34 +22,31 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	v1 "github.com/zoetrope/namespaced-webhook/api/v1"
 	admissionv1 "k8s.io/api/admissionregistration/v1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/yaml"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-//go:embed testdata/validating.yaml
-var validatingYAML []byte
+//go:embed testdata/mutating.yaml
+var mutatingYAML []byte
 
-var _ = Describe("NamespacedValidatingWebhookConfiguration webhook", func() {
+//go:embed testdata/invalid-mutating.yaml
+var invalidMutatingYAML []byte
+
+var _ = Describe("NamespacedMutatingWebhookConfiguration webhook", func() {
 	ctx := context.Background()
 
 	It("should mutate scope", func() {
-		ns := &corev1.Namespace{}
-		ns.Name = "test4"
-		err := k8sClient.Create(ctx, ns)
+		nmw := &v1.NamespacedMutatingWebhookConfiguration{}
+		err := yaml.Unmarshal(mutatingYAML, nmw)
 		Expect(err).NotTo(HaveOccurred())
-
-		nmw := &NamespacedValidatingWebhookConfiguration{}
-		err = yaml.Unmarshal(validatingYAML, nmw)
-		Expect(err).NotTo(HaveOccurred())
-
 		err = k8sClient.Create(ctx, nmw)
 		Expect(err).NotTo(HaveOccurred())
 
-		var mutated *NamespacedValidatingWebhookConfiguration
+		var mutated *v1.NamespacedMutatingWebhookConfiguration
 		Eventually(func() error {
-			mutated = &NamespacedValidatingWebhookConfiguration{}
+			mutated = &v1.NamespacedMutatingWebhookConfiguration{}
 			return k8sClient.Get(ctx, client.ObjectKey{Namespace: nmw.Namespace, Name: nmw.Name}, mutated)
 		}).Should(Succeed())
 
@@ -61,5 +58,13 @@ var _ = Describe("NamespacedValidatingWebhookConfiguration webhook", func() {
 				Expect(*rule.Scope).Should(Equal(admissionv1.NamespacedScope))
 			}
 		}
+	})
+
+	It("should deny creation of NamespacedMutatingWebhookConfiguration that contains a forbidden rule", func() {
+		nmw := &v1.NamespacedMutatingWebhookConfiguration{}
+		err := yaml.Unmarshal(invalidMutatingYAML, nmw)
+		Expect(err).NotTo(HaveOccurred())
+		err = k8sClient.Create(ctx, nmw)
+		Expect(err).To(HaveOccurred())
 	})
 })

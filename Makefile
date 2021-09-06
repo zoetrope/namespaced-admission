@@ -50,7 +50,7 @@ vet: ## Run go vet against code.
 	go vet ./...
 
 .PHONY: test
-test: manifests setup-envtest ## Run tests.
+test: setup-envtest ## Run tests.
 	source <($(SETUP_ENVTEST) use -p env); go test -v -count 1 ./...
 
 ##@ Build

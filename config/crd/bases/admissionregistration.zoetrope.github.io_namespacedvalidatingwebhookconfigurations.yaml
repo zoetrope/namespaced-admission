@@ -22,6 +22,11 @@ spec:
         description: NamespacedValidatingWebhookConfiguration is the Schema for the
           namespacedvalidatingwebhookconfigurations API
         properties:
+          ServiceAccountName:
+            default: default
+            description: ServiceAccountName is the name of the ServiceAccount to use
+              to check access to resources that this webhook will validate
+            type: string
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
               of an object. Servers should convert recognized schemas to the latest
@@ -165,6 +170,8 @@ spec:
               - sideEffects
               type: object
             type: array
+        required:
+        - ServiceAccountName
         type: object
     served: true
     storage: true

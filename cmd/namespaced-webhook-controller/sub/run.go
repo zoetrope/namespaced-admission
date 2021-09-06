@@ -11,11 +11,13 @@ import (
 
 	webhookv1 "github.com/zoetrope/namespaced-webhook/api/v1"
 	"github.com/zoetrope/namespaced-webhook/controllers"
+	"github.com/zoetrope/namespaced-webhook/hooks"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 func subMain() error {
@@ -39,7 +41,8 @@ func subMain() error {
 		return fmt.Errorf("invalid webhook address: %s, %v", options.webhookAddr, err)
 	}
 
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+	config := ctrl.GetConfigOrDie()
+	mgr, err := ctrl.NewManager(config, ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     options.metricsAddr,
 		Host:                   host,
@@ -53,6 +56,11 @@ func subMain() error {
 		return fmt.Errorf("unable to start manager: %w", err)
 	}
 
+	dec, err := admission.NewDecoder(scheme)
+	if err != nil {
+		return fmt.Errorf("unable to create admission decoder: %w", err)
+	}
+
 	if err = (&controllers.NamespacedMutatingWebhookConfigurationReconciler{
 		Client:         mgr.GetClient(),
 		Scheme:         mgr.GetScheme(),
@@ -60,6 +68,8 @@ func subMain() error {
 	}).SetupWithManager(mgr); err != nil {
 		return fmt.Errorf("unable to create NamespacedMutatingWebhookConfiguration controller: %w", err)
 	}
+	hooks.SetupNamespacedMutatingWebhookConfigurationWebhook(mgr, config, dec)
+
 	if err = (&controllers.NamespacedValidatingWebhookConfigurationReconciler{
 		Client:         mgr.GetClient(),
 		Scheme:         mgr.GetScheme(),
@@ -67,12 +77,8 @@ func subMain() error {
 	}).SetupWithManager(mgr); err != nil {
 		return fmt.Errorf("unable to create NamespacedValidatingWebhookConfiguration controller: %w", err)
 	}
-	if err = (&webhookv1.NamespacedMutatingWebhookConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
-		return fmt.Errorf("unable to create NamespacedMutatingWebhookConfiguration webhook: %w", err)
-	}
-	if err = (&webhookv1.NamespacedValidatingWebhookConfiguration{}).SetupWebhookWithManager(mgr); err != nil {
-		return fmt.Errorf("unable to create NamespacedValidatingWebhookConfiguration webhook: %w", err)
-	}
+	hooks.SetupNamespacedValidatingWebhookConfigurationWebhook(mgr, config, dec)
+
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

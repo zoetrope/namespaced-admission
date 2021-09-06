@@ -2,9 +2,9 @@ apiVersion: admissionregistration.zoetrope.github.io/v1
 kind: NamespacedValidatingWebhookConfiguration
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: test4/webhook-serving-cert
-  name: validating-test
-  namespace: test4
+    cert-manager.io/inject-ca-from: webhook-test/webhook-serving-cert
+  name: invalid-validating-test
+  namespace: webhook-test
 webhooks:
   - admissionReviewVersions:
       - v1
@@ -12,7 +12,7 @@ webhooks:
     clientConfig:
       service:
         name: webhook-service
-        namespace: test4
+        namespace: webhook-test
         path: /validate
     failurePolicy: Fail
     name: test.vpod.kb.io
@@ -26,30 +26,11 @@ webhooks:
           - CREATE
           - UPDATE
         resources:
-          - pods
-      - apiGroups:
-          - ""
-        apiVersions:
-          - v1
-        operations:
-          - CREATE
-          - UPDATE
-        resources:
-          - namespaces
-        scope: Cluster
-      - apiGroups:
-          - "apps"
-        apiVersions:
-          - v1
-        operations:
-          - CREATE
-          - UPDATE
-        resources:
-          - deployments
-        scope: "*"
+          - services
     sideEffects: None
     objectSelector:
       matchExpressions:
         - key: app.kubernetes.io/name
           operator: NotIn
           values: ["validating-test"]
+serviceAccountName: test

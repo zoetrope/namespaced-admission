@@ -2,5 +2,8 @@ resources:
   - certificate.yaml
   - deployment.yaml
   - namespace.yaml
+  - role.yaml
+  - role_binding.yaml
   - service.yaml
+  - service_account.yaml
   - webhook.yaml
