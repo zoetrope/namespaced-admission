@@ -2,6 +2,8 @@
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/zoetrope/namespaced-admission?tab=overview)](https://pkg.go.dev/github.com/zoetrope/namespaced-admission?tab=overview)
 [![Go Report Card](https://goreportcard.com/badge/github.com/zoetrope/namespaced-admission)](https://goreportcard.com/report/github.com/zoetrope/namespaced-admission)
 
+**Disclaimer: namespaced-admission is work in progress and not ready for production use.**
+
 # namespaced-admission
 
 namespaced-admission is a Kubernetes controller that allows tenant users to deploy [Admission Webhook](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/).
